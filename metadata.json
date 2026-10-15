@@ -1,0 +1,8 @@
+{
+  "name": "ChronoSonic: Zaman ve Işık Rezonansı",
+  "description": "Dünyada eşi benzeri olmayan zaman yankısı, ışık kırınımı ve akustik rezonans bulmaca ve aksiyon oyunu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

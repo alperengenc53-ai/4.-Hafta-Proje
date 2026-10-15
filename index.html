@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>ChronoSonic: Zaman ve Işık Rezonansı</title>
+    <meta name="description" content="Dünyada eşi benzeri olmayan zaman yankısı, ışık kırınımı ve akustik rezonans bulmaca ve aksiyon oyunu." />
+    <meta property="og:title" content="ChronoSonic: Zaman ve Işık Rezonansı" />
+    <meta property="og:description" content="Dünyada eşi benzeri olmayan zaman yankısı, ışık kırınımı ve akustik rezonans bulmaca ve aksiyon oyunu." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="./assets/cosmic_prism.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- High Performance Raycasting Canvas -->
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Top Bar Contract: 3 Zones -->
+      <header id="top-bar">
+        <!-- Zone 1: Single text element wordmark -->
+        <div class="brand-zone">
+          <span class="brand-title">ChronoSonic</span>
+        </div>
+
+        <!-- Zone 2: Single-line navigation links -->
+        <nav class="nav-links">
+          <button id="btn-levels" class="nav-btn active">Bölümler (20)</button>
+          <button id="btn-guide" class="nav-btn">Nasıl Oynanır?</button>
+        </nav>
+
+        <!-- Zone 3: Primary Actions -->
+        <div class="header-actions">
+          <!-- Standout Hint Button on Top Bar for Instant Access -->
+          <button id="btn-hint-top" class="icon-btn btn-hint" title="Bölüm Çözüm İpucu">
+            <span>💡</span> Bölüm Nasıl Geçilir?
+          </button>
+          <button id="btn-audio" class="icon-btn" title="Ses Aç / Kapat">
+            <span id="audio-icon">🔊</span> Ses Açık
+          </button>
+          <button id="btn-reset" class="icon-btn" title="Bölümü Yeniden Başlat">
+            <span>↺</span> Yeniden Başlat
+          </button>
+        </div>
+      </header>
+
+      <!-- Floating HUD Overlay -->
+      <div id="hud-overlay">
+        <!-- Level Information Card -->
+        <div class="hud-panel level-info-card">
+          <div class="level-meta-row">
+            <div class="level-meta">
+              <span id="level-number">Bölüm 1 / 20</span>
+              <span aria-hidden="true">·</span>
+              <span>Rezonans</span>
+            </div>
+            <!-- Quick Level Navigation -->
+            <div class="level-nav-mini">
+              <button id="btn-prev-level" class="mini-nav-btn" title="Önceki Bölüm">← Önceki</button>
+              <button id="btn-next-level-quick" class="mini-nav-btn" title="Sonraki Bölüm">Sonraki →</button>
+            </div>
+          </div>
+
+          <h2 id="level-title" class="level-title">İlk Işık</h2>
+          <p id="level-desc" class="level-desc">Farenizi hareket ettirerek Sol (432Hz Mavi) frekansındaki ışık ışınını kristale yöneltin.</p>
+          
+          <div id="targets-status" class="targets-status">
+            <!-- Populated dynamically by game engine -->
+          </div>
+
+          <!-- Direct In-Card Hint Trigger Bar -->
+          <div class="level-action-bar">
+            <button id="btn-card-hint" class="hint-trigger-btn" title="Bu bölümün adım adım çözüm ipucunu aç">
+              <span>💡</span>
+              <span>Bu Bölüm Nasıl Geçilir? (İpucu)</span>
+            </button>
+            <span class="helper-tag">[H] Tuşu</span>
+          </div>
+        </div>
+
+        <!-- Stats & Convenience Toggles Panel -->
+        <div class="hud-panel stats-panel">
+          <div class="quick-helpers">
+            <button id="btn-toggle-autofire" class="helper-btn active" title="Devamlı Işın (Açık/Kapalı)">
+              <span>⚡</span> Devamlı Işın: Açık
+            </button>
+            <button id="btn-toggle-slowmo" class="helper-btn" title="Zamanı Yavaşlat (Açık/Kapalı) [Q]">
+              <span>⏳</span> Ağır Çekim: Kapalı
+            </button>
+          </div>
+          <div class="stat-group">
+            <span class="stat-label">Rezonans Skoru</span>
+            <span class="stat-value" id="hud-score">500</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Hint Toast -->
+      <div id="hint-toast">Hazır</div>
+
+      <!-- Bottom Control Dock: Frequency & Groundbreaking Temporal Echo -->
+      <footer id="bottom-dock">
+        <!-- Frequency Selector -->
+        <div class="frequency-selector">
+          <button class="freq-btn sol active" data-freq="SOL" title="Sol (432Hz Mavi)">
+            <span class="freq-dot freq-sol-bg"></span>
+            <span>Sol 432Hz</span>
+            <span class="kbd-badge">[1]</span>
+          </button>
+          <button class="freq-btn ignis" data-freq="IGNIS" title="Ignis (528Hz Turuncu)">
+            <span class="freq-dot freq-ignis-bg"></span>
+            <span>Ignis 528Hz</span>
+            <span class="kbd-badge">[2]</span>
+          </button>
+          <button class="freq-btn terra" data-freq="TERRA" title="Terra (639Hz Zümrüt)">
+            <span class="freq-dot freq-terra-bg"></span>
+            <span>Terra 639Hz</span>
+            <span class="kbd-badge">[3]</span>
+          </button>
+          <button class="freq-btn aether" data-freq="AETHER" title="Aether (852Hz Ametist)">
+            <span class="freq-dot freq-aether-bg"></span>
+            <span>Aether 852Hz</span>
+            <span class="kbd-badge">[4]</span>
+          </button>
+        </div>
+
+        <!-- The Unprecedented Temporal Echo Trigger -->
+        <div class="echo-btn-wrap">
+          <button id="echo-btn" class="echo-trigger-btn" title="Geçmiş 4 saniyelik hareketinizi tekrarlayan zaman hayaleti oluşturur">
+            <span>⏱️</span>
+            <span>Zaman Yankısı</span>
+            <span class="kbd-badge">[BOŞLUK]</span>
+          </button>
+          <button id="clear-echo-btn" class="echo-clear-btn" title="Yankıları Temizle">
+            <span>Temizle [C]</span>
+          </button>
+        </div>
+      </footer>
+
+      <!-- Modals -->
+      <!-- 1. Dedicated Level Hint Modal (Bölüm Nasıl Geçilir?) -->
+      <div id="hint-modal" class="modal-backdrop">
+        <div class="modal-card hint-card">
+          <div class="modal-header">
+            <div>
+              <div class="hint-badge-tag">
+                <span>💡</span> <span id="hint-modal-level-title">Bölüm 1</span> İpucu & Çözüm
+              </div>
+              <h3 class="modal-title" id="hint-modal-heading">Bu Bölüm Nasıl Geçilir?</h3>
+            </div>
+            <button class="modal-close-btn">&times;</button>
+          </div>
+
+          <div class="hint-step-box">
+            <div id="hint-steps-container">
+              <!-- Dynamically populated with step-by-step instructions -->
+            </div>
+          </div>
+
+          <div class="hint-footer-actions">
+            <button id="btn-toggle-ghost-path" class="icon-btn">
+              <span>👁️</span> <span id="ghost-path-text">Görsel Çözüm İzini Göster</span>
+            </button>
+            <button id="btn-close-hint" class="icon-btn btn-primary">Anladım, Oyna</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Victory / Level Complete Modal -->
+      <div id="victory-modal" class="modal-backdrop">
+        <div class="modal-card victory-card">
+          <h2 class="victory-badge">Harmoni Sağlandı!</h2>
+          <p class="victory-sub">Tüm hedef kristaller frekans rezonansına ulaştı.</p>
+          <div class="victory-stats">
+            <div class="stat-group">
+              <span class="stat-label">Tamamlama Süresi</span>
+              <span class="stat-value" id="stat-time-val">4.2s</span>
+            </div>
+            <div class="stat-group">
+              <span class="stat-label">Kazanılan Puan</span>
+              <span class="stat-value" id="stat-score-val">+500</span>
+            </div>
+            <div class="stat-group">
+              <span class="stat-label">Kullanılan Yankı</span>
+              <span class="stat-value" id="stat-echoes-val">1 Aktif</span>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="btn-replay-level" class="icon-btn">Tekrar Oyna</button>
+            <button id="btn-next-level" class="icon-btn btn-primary">Sonraki Bölüm →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Level Select Modal (20 Levels) -->
+      <div id="levels-modal" class="modal-backdrop">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">Bölüm Seçimi (20 Aşama)</h3>
+            <button class="modal-close-btn">&times;</button>
+          </div>
+          <p class="guide-text">İstediğiniz bölüme anında geçiş yapabilir, zorlandığınızda [💡 Bölüm Nasıl Geçilir?] ipucunu kullanabilirsiniz:</p>
+          <div id="levels-grid" class="level-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. How To Play / Guide Modal -->
+      <div id="guide-modal" class="modal-backdrop">
+        <div class="modal-card">
+          <div class="modal-header">
+            <h3 class="modal-title">ChronoSonic Kılavuzu & Kolaylıklar</h3>
+            <button class="modal-close-btn">&times;</button>
+          </div>
+          <div class="guide-section">
+            <h4 class="guide-heading">1. Dünyada Eşi Olmayan Mekanik: Zaman Yankısı (Temporal Echo)</h4>
+            <p class="guide-text">
+              Bazı aşamalarda hedefler tek bir kişinin aynı anda vuramayacağı kadar uzaktadır veya farklı yönlerdedir. <strong>BOŞLUK TUŞUNA</strong> bastığınızda, sistem son 4 saniyelik hareketinizi kaydederek bir <strong>Zaman Hayaleti (Spectral Ghost)</strong> oluşturur. Hayaletiniz o atışı sürdürürken siz gidip diğer hedefleri vurabilirsiniz!
+            </p>
+          </div>
+          <div class="guide-section">
+            <h4 class="guide-heading">2. Akustik Frekanslar ve Renk Uyumu</h4>
+            <p class="guide-text">
+              Hedef kristaller sadece kendi doğal frekanslarındaki ışınlarla dolar:
+              <br />• <strong>Sol (432Hz Mavi)</strong>: Saf kristal rezonansı.
+              <br />• <strong>Ignis (528Hz Turuncu)</strong>: Dönüşüm ve enerji ışını.
+              <br />• <strong>Terra (639Hz Zümrüt)</strong>: Doğa ve bağlantı akoru.
+              <br />• <strong>Aether (852Hz Ametist)</strong>: Yüksek frekanslı kozmik ışın.
+            </p>
+          </div>
+          <div class="guide-section">
+            <h4 class="guide-heading">3. Yeni Kolaylıklar</h4>
+            <p class="guide-text">
+              • <strong>💡 Bölüm Nasıl Geçilir Kutusu</strong>: Takıldığınız her aşamada tek tıkla net adımları ve görsel çözüm kılavuzunu açabilirsiniz.
+              <br />• <strong>WASD / Ok Tuşları</strong>: Klavyenizle karakterinizi kolayca hareket ettirebilirsiniz.
+              <br />• <strong>[Q] Ağır Çekim</strong>: Zamanı yavaşlatarak hassas nişan alabilirsiniz.
+              <br />• <strong>Hassas Ayna Döndürme</strong>: Aynaların ortasındaki mavi halkadan tutarak açısını istediğiniz gibi hassasça ayarlayabilirsiniz.
+            </p>
+          </div>
+          <div class="guide-section">
+            <h4 class="guide-heading">4. Kısayol Tuşları</h4>
+            <div class="guide-key-row"><span class="kbd-badge">WASD / Ok Tuşları</span> <span>Lumina Karakterini Hareket Ettir</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">Fare</span> <span>Hedef Alma & Ayna Döndürme</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">H Tuşu</span> <span>💡 Bölüm Nasıl Geçilir? (İpucu)</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">Q Tuşu</span> <span>Ağır Çekim (Slow-Motion)</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">Boşluk (Space)</span> <span>Zaman Yankısı Başlat</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">1, 2, 3, 4</span> <span>Sol, Ignis, Terra, Aether Değiştir</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">C</span> <span>Zaman Yankılarını Temizle</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">R</span> <span>Bölümü Sıfırla</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pure Standalone JavaScript Engine (Zero Compilation Needed) -->
+    <script src="./game.js"></script>
+  </body>
+</html>
