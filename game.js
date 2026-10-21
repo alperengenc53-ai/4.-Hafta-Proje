@@ -334,11 +334,12 @@ class ChronoSonicGame {
     this.isCardCollapsed = false;
     this.gravityAssist = true; // Gentle Keplerian deflection & crystal magnetic lock-on
 
-    // Movement strictly with WASD / Arrow keys
+    // Movement strictly with WASD / Arrow keys or Virtual Touch Joystick
     this.keys = {
       w: false, a: false, s: false, d: false,
       ArrowUp: false, ArrowLeft: false, ArrowDown: false, ArrowRight: false
     };
+    this.joystickVector = { x: 0, y: 0 };
 
     // Player Vessel (Lumina)
     this.player = {
@@ -540,17 +541,133 @@ class ChronoSonicGame {
       if (this.keys.hasOwnProperty(e.key)) this.keys[e.key] = false;
     });
 
-    // Touch Support
-    window.addEventListener('touchmove', (e) => {
+    // Full Mobile Touch & Virtual Joystick Support
+    const joystickBase = document.getElementById('joystick-base');
+    const joystickThumb = document.getElementById('joystick-thumb');
+
+    if (joystickBase && joystickThumb) {
+      let joystickActive = false;
+      let joystickTouchId = null;
+
+      const handleJoystickMove = (clientX, clientY) => {
+        const rect = joystickBase.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        let dx = clientX - centerX;
+        let dy = clientY - centerY;
+        const dist = Math.hypot(dx, dy);
+        const maxDist = 32;
+
+        if (dist > maxDist) {
+          dx = (dx / dist) * maxDist;
+          dy = (dy / dist) * maxDist;
+        }
+
+        joystickThumb.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+        this.joystickVector = {
+          x: dx / maxDist,
+          y: dy / maxDist
+        };
+      };
+
+      const handleJoystickEnd = () => {
+        joystickActive = false;
+        joystickTouchId = null;
+        joystickThumb.style.transform = 'translate(-50%, -50%)';
+        this.joystickVector = { x: 0, y: 0 };
+      };
+
+      joystickBase.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const touch = e.changedTouches[0];
+        joystickTouchId = touch.identifier;
+        joystickActive = true;
+        handleJoystickMove(touch.clientX, touch.clientY);
+      }, { passive: false });
+
+      window.addEventListener('touchmove', (e) => {
+        if (!joystickActive) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === joystickTouchId) {
+            handleJoystickMove(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+            break;
+          }
+        }
+      }, { passive: false });
+
+      window.addEventListener('touchend', (e) => {
+        if (!joystickActive) return;
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          if (e.changedTouches[i].identifier === joystickTouchId) {
+            handleJoystickEnd();
+            break;
+          }
+        }
+      });
+      window.addEventListener('touchcancel', handleJoystickEnd);
+    }
+
+    // Touch on Game Canvas for Aiming and Dragging Mirrors
+    window.addEventListener('touchstart', (e) => {
+      if (e.target.closest('#top-bar') || e.target.closest('#bottom-dock') || e.target.closest('.modal-card') || e.target.closest('#hud-overlay') || e.target.closest('#build-toolbelt') || e.target.closest('#mobile-controls')) {
+        return;
+      }
+
       if (e.touches.length > 0) {
         const touch = e.touches[0];
         this.mouse.x = touch.clientX;
         this.mouse.y = touch.clientY;
-        const dx = this.mouse.x - this.player.x;
-        const dy = this.mouse.y - this.player.y;
-        this.player.angle = Math.atan2(dy, dx);
+
+        const mirrorHit = this.getMirrorHandleAt(touch.clientX, touch.clientY);
+        if (mirrorHit) {
+          this.draggedMirror = mirrorHit.mirror;
+          this.dragMode = mirrorHit.mode;
+        } else {
+          this.mouse.isDown = true;
+          this.player.isFiring = true;
+          const dx = touch.clientX - this.player.x;
+          const dy = touch.clientY - this.player.y;
+          this.player.angle = Math.atan2(dy, dx);
+        }
       }
     }, { passive: false });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.target.closest('#mobile-controls')) return;
+      if (e.touches.length > 0) {
+        const touch = e.touches[0];
+        this.mouse.x = touch.clientX;
+        this.mouse.y = touch.clientY;
+
+        if (this.draggedMirror) {
+          if (this.dragMode === 'move') {
+            this.draggedMirror.x = touch.clientX;
+            this.draggedMirror.y = touch.clientY;
+            this.draggedMirror.updatePoints();
+          } else if (this.dragMode === 'rotate') {
+            const dx = touch.clientX - this.draggedMirror.x;
+            const dy = touch.clientY - this.draggedMirror.y;
+            this.draggedMirror.angle = Math.atan2(dy, dx);
+            this.draggedMirror.updatePoints();
+          }
+        } else {
+          const dx = touch.clientX - this.player.x;
+          const dy = touch.clientY - this.player.y;
+          this.player.angle = Math.atan2(dy, dx);
+        }
+      }
+    }, { passive: false });
+
+    window.addEventListener('touchend', (e) => {
+      if (!e.target.closest('#mobile-controls')) {
+        this.draggedMirror = null;
+        this.dragMode = null;
+        if (!this.isAutoFiring) {
+          this.player.isFiring = false;
+        }
+      }
+    });
 
     // UI Wireups
     document.querySelectorAll('.freq-btn').forEach(btn => {
@@ -1291,10 +1408,18 @@ class ChronoSonicGame {
     if (this.keys.a || this.keys.ArrowLeft) moveX -= 1;
     if (this.keys.d || this.keys.ArrowRight) moveX += 1;
 
+    // Mobile Virtual Touch Joystick Input
+    if (this.joystickVector && (this.joystickVector.x !== 0 || this.joystickVector.y !== 0)) {
+      moveX += this.joystickVector.x;
+      moveY += this.joystickVector.y;
+    }
+
     if (moveX !== 0 || moveY !== 0) {
       const len = Math.hypot(moveX, moveY);
-      moveX /= len;
-      moveY /= len;
+      if (len > 1) {
+        moveX /= len;
+        moveY /= len;
+      }
 
       const newX = this.player.x + moveX * this.player.speed * dt;
       const newY = this.player.y + moveY * this.player.speed * dt;
@@ -1340,7 +1465,7 @@ class ChronoSonicGame {
   loadLevel(index) {
     if (index < 0) index = 0;
     if (index >= LEVELS.length) {
-      this.showToast('Tüm 20 bölümü tamamladınız! Gerçek bir Kozmik Ustasınız!');
+      this.showToast('Tüm 30 bölümü tamamladınız! Gerçek bir Kozmik Ustasınız!');
       index = 0;
     }
     this.currentLevelIndex = index;
