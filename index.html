@@ -26,15 +26,21 @@
 
         <!-- Zone 2: Single-line navigation links -->
         <nav class="nav-links">
-          <button id="btn-levels" class="nav-btn active">Bölümler (20)</button>
+          <button id="btn-levels" class="nav-btn active">Bölümler (30)</button>
           <button id="btn-guide" class="nav-btn">Nasıl Oynanır?</button>
         </nav>
 
         <!-- Zone 3: Primary Actions -->
         <div class="header-actions">
+          <button id="btn-toggle-hud" class="icon-btn" title="Bilgi Panellerini Gizle / Göster [TAB]">
+            <span id="hud-toggle-icon">👁️</span> <span id="hud-toggle-text">Panelleri Gizle</span>
+          </button>
           <!-- Standout Hint Button on Top Bar for Instant Access -->
           <button id="btn-hint-top" class="icon-btn btn-hint" title="Bölüm Çözüm İpucu">
             <span>💡</span> Bölüm Nasıl Geçilir?
+          </button>
+          <button id="btn-qr" class="icon-btn" title="Projeyi Telefonda Aç / QR Kod">
+            <span>📱</span> QR Kod
           </button>
           <button id="btn-audio" class="icon-btn" title="Ses Aç / Kapat">
             <span id="audio-icon">🔊</span> Ses Açık
@@ -47,35 +53,41 @@
 
       <!-- Floating HUD Overlay -->
       <div id="hud-overlay">
-        <!-- Level Information Card -->
-        <div class="hud-panel level-info-card">
+        <!-- Level Information Card (Compact & Collapsible) -->
+        <div class="hud-panel level-info-card" id="level-info-card">
           <div class="level-meta-row">
             <div class="level-meta">
-              <span id="level-number">Bölüm 1 / 20</span>
+              <span id="level-number">Bölüm 1 / 30</span>
               <span aria-hidden="true">·</span>
               <span>Rezonans</span>
             </div>
-            <!-- Quick Level Navigation -->
-            <div class="level-nav-mini">
-              <button id="btn-prev-level" class="mini-nav-btn" title="Önceki Bölüm">← Önceki</button>
-              <button id="btn-next-level-quick" class="mini-nav-btn" title="Sonraki Bölüm">Sonraki →</button>
+            <div style="display: flex; align-items: center; gap: 0.35rem;">
+              <!-- Quick Level Navigation -->
+              <div class="level-nav-mini">
+                <button id="btn-prev-level" class="mini-nav-btn" title="Önceki Bölüm">← Önceki</button>
+                <button id="btn-next-level-quick" class="mini-nav-btn" title="Sonraki Bölüm">Sonraki →</button>
+              </div>
+              <button id="btn-collapse-card" class="collapse-toggle-btn" title="Paneli Küçült / Genişlet">▲</button>
             </div>
           </div>
 
-          <h2 id="level-title" class="level-title">İlk Işık</h2>
-          <p id="level-desc" class="level-desc">Farenizi hareket ettirerek Sol (432Hz Mavi) frekansındaki ışık ışınını kristale yöneltin.</p>
-          
+          <!-- Target Status Bar (Always Visible) -->
           <div id="targets-status" class="targets-status">
             <!-- Populated dynamically by game engine -->
           </div>
 
-          <!-- Direct In-Card Hint Trigger Bar -->
-          <div class="level-action-bar">
-            <button id="btn-card-hint" class="hint-trigger-btn" title="Bu bölümün adım adım çözüm ipucunu aç">
-              <span>💡</span>
-              <span>Bu Bölüm Nasıl Geçilir? (İpucu)</span>
-            </button>
-            <span class="helper-tag">[H] Tuşu</span>
+          <div class="collapsible-body" id="level-collapsible-body">
+            <h2 id="level-title" class="level-title">İlk Işık</h2>
+            <p id="level-desc" class="level-desc">Farenizi hareket ettirerek Sol (432Hz Mavi) frekansındaki ışık ışınını kristale yöneltin.</p>
+            
+            <!-- Direct In-Card Hint Trigger Bar -->
+            <div class="level-action-bar">
+              <button id="btn-card-hint" class="hint-trigger-btn" title="Bu bölümün adım adım çözüm ipucunu aç">
+                <span>💡</span>
+                <span>İpucu [H]</span>
+              </button>
+              <span class="helper-tag">[TAB] Gizle</span>
+            </div>
           </div>
         </div>
 
@@ -83,14 +95,17 @@
         <div class="hud-panel stats-panel">
           <div class="quick-helpers">
             <button id="btn-toggle-autofire" class="helper-btn active" title="Devamlı Işın (Açık/Kapalı)">
-              <span>⚡</span> Devamlı Işın: Açık
+              <span>⚡</span> Devamlı: Açık
             </button>
             <button id="btn-toggle-slowmo" class="helper-btn" title="Zamanı Yavaşlat (Açık/Kapalı) [Q]">
-              <span>⏳</span> Ağır Çekim: Kapalı
+              <span>⏳</span> Ağır Çekim [Q]
+            </button>
+            <button id="btn-toggle-gravity-assist" class="helper-btn active" title="Karadelik Kütleçekim Yardımı & Manyetik Kilitlenme [G]">
+              <span>🌀</span> Kütleçekim Yardımı: Açık
             </button>
           </div>
           <div class="stat-group">
-            <span class="stat-label">Rezonans Skoru</span>
+            <span class="stat-label">Skor</span>
             <span class="stat-value" id="hud-score">500</span>
           </div>
         </div>
@@ -98,6 +113,28 @@
 
       <!-- Quick Hint Toast -->
       <div id="hint-toast">Hazır</div>
+
+      <!-- Kozmik Yapım / İnşa Araç Çubuğu (Cosmic Construction Toolbelt) -->
+      <div id="build-toolbelt">
+        <div class="build-label">
+          <span>🛠️</span> Yapım:
+        </div>
+        <button id="btn-build-mirror" class="build-btn" title="Yeni Yansıtıcı Ayna Yerleştir [M]">
+          <span>🪞</span> +Ayna <span class="kbd-badge">[M]</span>
+        </button>
+        <button id="btn-build-prism" class="build-btn" title="Frekans Dönüştürücü Prizma Yerleştir [P]">
+          <span>💎</span> +Prizma <span class="kbd-badge">[P]</span>
+        </button>
+        <button id="btn-build-splitter" class="build-btn" title="Işını İkiye Bölen Kristal Yerleştir [B]">
+          <span>🔀</span> +Bölücü <span class="kbd-badge">[B]</span>
+        </button>
+        <button id="btn-rotate-placed" class="build-btn" title="Ayna/Prizmayı Döndür [Z/X]">
+          <span>🔄</span> Döndür <span class="kbd-badge">[Z]</span>
+        </button>
+        <button id="btn-clear-placed" class="build-btn danger" title="Oyuncu Tarafından İnşa Edilen Yapımları Temizle">
+          <span>🗑️</span> Yapımları Sil
+        </button>
+      </div>
 
       <!-- Bottom Control Dock: Frequency & Groundbreaking Temporal Echo -->
       <footer id="bottom-dock">
@@ -125,8 +162,13 @@
           </button>
         </div>
 
-        <!-- The Unprecedented Temporal Echo Trigger -->
+        <!-- Nova Shockwave & Temporal Echo Actions -->
         <div class="echo-btn-wrap">
+          <button id="btn-nova" class="nova-trigger-btn" title="Kozmik Rezonans Dalgası yayar, kristalleri şarj eder [E]">
+            <span>🌊</span>
+            <span>Nova Dalgası</span>
+            <span class="kbd-badge">[E]</span>
+          </button>
           <button id="echo-btn" class="echo-trigger-btn" title="Geçmiş 4 saniyelik hareketinizi tekrarlayan zaman hayaleti oluşturur">
             <span>⏱️</span>
             <span>Zaman Yankısı</span>
@@ -167,6 +209,33 @@
         </div>
       </div>
 
+      <!-- QR Code Modal (Projeyi Telefonda Aç) -->
+      <div id="qr-modal" class="modal-backdrop">
+        <div class="modal-card qr-card" style="text-align: center; max-width: 440px;">
+          <div class="modal-header">
+            <h3 class="modal-title">Proje QR Kodu</h3>
+            <button class="modal-close-btn">&times;</button>
+          </div>
+          <p class="guide-text" style="margin-bottom: 1.25rem;">
+            Telefonunuzun kamerasıyla karekodu okutarak projeyi anında telefonunuzda açabilirsiniz:
+          </p>
+          <div style="background: #ffffff; padding: 1rem; border-radius: 14px; display: inline-block; box-shadow: 0 10px 25px rgba(0,0,0,0.5); margin-bottom: 1rem;">
+            <img src="./assets/project_qr.png" alt="Proje QR Kodu" style="width: 210px; height: 210px; display: block;" />
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 0.74rem; color: #38bdf8; word-break: break-all; margin-bottom: 1.25rem; background: rgba(0,0,0,0.3); padding: 0.4rem 0.6rem; border-radius: 6px;">
+            https://alperengenc53-ai.github.io/4.-Hafta-Proje/
+          </div>
+          <div class="modal-actions">
+            <a href="./assets/project_qr.png" download="proje_qr_kodu.png" class="icon-btn btn-primary" style="text-decoration: none;">
+              <span>📥</span> QR Kodu İndir
+            </a>
+            <a href="https://alperengenc53-ai.github.io/4.-Hafta-Proje/" target="_blank" rel="noopener noreferrer" class="icon-btn" style="text-decoration: none;">
+              <span>🔗</span> Doğrudan Aç
+            </a>
+          </div>
+        </div>
+      </div>
+
       <!-- 2. Victory / Level Complete Modal -->
       <div id="victory-modal" class="modal-backdrop">
         <div class="modal-card victory-card">
@@ -193,11 +262,11 @@
         </div>
       </div>
 
-      <!-- 3. Level Select Modal (20 Levels) -->
+      <!-- 3. Level Select Modal (30 Levels) -->
       <div id="levels-modal" class="modal-backdrop">
         <div class="modal-card">
           <div class="modal-header">
-            <h3 class="modal-title">Bölüm Seçimi (20 Aşama)</h3>
+            <h3 class="modal-title">Bölüm Seçimi (30 Aşama)</h3>
             <button class="modal-close-btn">&times;</button>
           </div>
           <p class="guide-text">İstediğiniz bölüme anında geçiş yapabilir, zorlandığınızda [💡 Bölüm Nasıl Geçilir?] ipucunu kullanabilirsiniz:</p>
@@ -221,33 +290,32 @@
             </p>
           </div>
           <div class="guide-section">
-            <h4 class="guide-heading">2. Akustik Frekanslar ve Renk Uyumu</h4>
+            <h4 class="guide-heading">2. Yumuşatılmış Karadelik Fiziği & Kütleçekim Yardımı</h4>
             <p class="guide-text">
-              Hedef kristaller sadece kendi doğal frekanslarındaki ışınlarla dolar:
-              <br />• <strong>Sol (432Hz Mavi)</strong>: Saf kristal rezonansı.
-              <br />• <strong>Ignis (528Hz Turuncu)</strong>: Dönüşüm ve enerji ışını.
-              <br />• <strong>Terra (639Hz Zümrüt)</strong>: Doğa ve bağlantı akoru.
-              <br />• <strong>Aether (852Hz Ametist)</strong>: Yüksek frekanslı kozmik ışın.
+              Karadeliklerin çekirdek yutma yarıçapı küçültülmüş, kütleçekimsel eğrilme pürüzsüzleştirilmiştir. Işın hedef kristale yaklaştığında <strong>manyetik kilitlenme</strong> devreye girerek ışını hedefin merkezine nazikçe odaklar!
             </p>
           </div>
           <div class="guide-section">
-            <h4 class="guide-heading">3. Yeni Kolaylıklar</h4>
+            <h4 class="guide-heading">3. Kozmik Yapım / İnşa Araçları (Yeni Yapımlar)</h4>
             <p class="guide-text">
-              • <strong>💡 Bölüm Nasıl Geçilir Kutusu</strong>: Takıldığınız her aşamada tek tıkla net adımları ve görsel çözüm kılavuzunu açabilirsiniz.
-              <br />• <strong>WASD / Ok Tuşları</strong>: Klavyenizle karakterinizi kolayca hareket ettirebilirsiniz.
-              <br />• <strong>[Q] Ağır Çekim</strong>: Zamanı yavaşlatarak hassas nişan alabilirsiniz.
-              <br />• <strong>Hassas Ayna Döndürme</strong>: Aynaların ortasındaki mavi halkadan tutarak açısını istediğiniz gibi hassasça ayarlayabilirsiniz.
+              • <strong>[M] +Ayna İnşa Et</strong>: İstediğiniz yere yeni yansıtıcı ayna yerleştirin.
+              <br />• <strong>[P] +Prizma İnşa Et</strong>: Renk dönüştürücü prizma kurun.
+              <br />• <strong>[B] +Bölücü İnşa Et</strong>: Işığı ikiye bölen kristal yerleştirin.
+              <br />• <strong>[Z/X veya Fare Tekerleği]</strong>: Aynaları döndürün veya sürükleyin.
             </p>
           </div>
           <div class="guide-section">
             <h4 class="guide-heading">4. Kısayol Tuşları</h4>
-            <div class="guide-key-row"><span class="kbd-badge">WASD / Ok Tuşları</span> <span>Lumina Karakterini Hareket Ettir</span></div>
-            <div class="guide-key-row"><span class="kbd-badge">Fare</span> <span>Hedef Alma & Ayna Döndürme</span></div>
-            <div class="guide-key-row"><span class="kbd-badge">H Tuşu</span> <span>💡 Bölüm Nasıl Geçilir? (İpucu)</span></div>
-            <div class="guide-key-row"><span class="kbd-badge">Q Tuşu</span> <span>Ağır Çekim (Slow-Motion)</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">WASD / Ok Tuşları</span> <span>Karakteri Hareket Ettir</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">M / P / B</span> <span>Ayna / Prizma / Bölücü İnşa Et</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">Z / X / Tekerlek</span> <span>Ayna ve Yapımları Döndür</span></div>
             <div class="guide-key-row"><span class="kbd-badge">Boşluk (Space)</span> <span>Zaman Yankısı Başlat</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">E Tuşu</span> <span>Nova Rezonans Şok Dalgası</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">H Tuşu</span> <span>💡 Bölüm Nasıl Geçilir? (İpucu)</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">G Tuşu</span> <span>Kütleçekim Yardımı Aç/Kapat</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">Q Tuşu</span> <span>Ağır Çekim (Slow-Motion)</span></div>
             <div class="guide-key-row"><span class="kbd-badge">1, 2, 3, 4</span> <span>Sol, Ignis, Terra, Aether Değiştir</span></div>
-            <div class="guide-key-row"><span class="kbd-badge">C</span> <span>Zaman Yankılarını Temizle</span></div>
+            <div class="guide-key-row"><span class="kbd-badge">C / Del</span> <span>Yankıları / Yapımları Temizle</span></div>
             <div class="guide-key-row"><span class="kbd-badge">R</span> <span>Bölümü Sıfırla</span></div>
           </div>
         </div>
